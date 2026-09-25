@@ -48,9 +48,23 @@ not additional labels or state.
 ## Ownership
 
 `common` documents this contract and consumes configured automation; it does not
-own a lifecycle implementation. Reusable lifecycle automation belongs to
-`projectbluefin/actions`. Report intake and report-specific automation belong
-to `projectbluefin/bonedigger`.
+own a lifecycle implementation. Reusable lifecycle automation lives in
+`projectbluefin/bonedigger` (`.github/workflows/lifecycle.yml`), called as a
+pinned `workflow_call` from each consuming repository's own
+`.github/workflows/bonedigger.yml` (see `bluefin`, `bluefin-lts`, and `dakota`
+for the reference caller shape: `on: issues.opened, issue_comment.created`,
+`permissions: issues: write, contents: read`, `secrets: inherit`). As of this
+writing that reusable workflow scopes only to `ujust report` intake,
+confirm-based priority escalation (`priority/p0`/`priority/p1`), and the
+agent-donation fast track (`status/approved`, `status/queued`,
+`flow/agent-donation`) — it does not apply `1-triage` or route
+`3-human-queue`/`3-clanker-queue` for ordinary issues. `projectbluefin/actions`
+does not currently contain a lifecycle workflow, despite earlier text in this
+repository pointing to one there. The `1-triage` default on new issues comes
+from each repository's own issue form (`labels: ["1-triage"]` in
+`.github/ISSUE_TEMPLATE/*.yml`); advancing an issue to `3-human-queue` or
+`3-clanker-queue` is currently a human action, not an automated one, unless a
+repository's caller explicitly implements that step.
 
 ## Downstream consumer subsets
 
