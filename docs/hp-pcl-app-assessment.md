@@ -12,9 +12,10 @@ README, man page, and source, not from measured hardware output.
 Does [michaelrsweet/hp-printer-app](https://github.com/michaelrsweet/hp-printer-app)
 (a native PAPPL example application for HP PCL printers) provide printer
 coverage that the planned [OpenPrinting/hplip-printer-app](https://github.com/OpenPrinting/hplip-printer-app)
-appliance (tracked by [common#1210](https://github.com/projectbluefin/common/issues/1210)
-and the sibling `hplip-printer-app` repo work) does not already provide, such
-that a second, redundant HP-focused OCI image would be justified?
+appliance (tracked by [common#1209](https://github.com/projectbluefin/common/issues/1209)
+and [hplip-printer-app#1](https://github.com/projectbluefin/hplip-printer-app/issues/1))
+does not already provide, such that a second, redundant HP-focused OCI image
+would be justified?
 
 ## Coverage mapping
 
@@ -54,8 +55,8 @@ that a second, redundant HP-focused OCI image would be justified?
    proven for HP hardware, this assessment **does not** produce a rootless
    FSDK OCI prototype for `hp-printer-app`. HP printer driver needs route to
    the existing/planned HPLIP Printer Application work
-   ([common#1210](https://github.com/projectbluefin/common/issues/1210),
-   [projectbluefin/hplip-printer-app](https://github.com/projectbluefin/hplip-printer-app)).
+   ([common#1209](https://github.com/projectbluefin/common/issues/1209),
+   [hplip-printer-app#1](https://github.com/projectbluefin/hplip-printer-app/issues/1)).
    That image must continue to be honest that it does not bundle HP's
    proprietary plugin and does not yet scan.
 
