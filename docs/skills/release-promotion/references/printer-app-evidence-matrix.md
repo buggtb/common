@@ -29,12 +29,12 @@ committed anywhere in these repos and are marked unverified below.
 
 | Criterion | `ps-printer-app` | `hplip-printer-app` | `gutenprint-printer-app` | `ghostscript-printer-app` |
 |---|---|---|---|---|
-| GHCR image published | ❌ none — `ghcr.io/projectbluefin/<repo>` returns `NAME_UNKNOWN` | ❌ none | ❌ none | ✅ `v10.07.1-1`, `v10.07.1-1-x86_64`, `v10.07.1-1-aarch64` |
-| Source commit / FSDK revision on record | unverified — no tag exists to pin | unverified | unverified | ✅ tag `v10.07.1-1` → commit `6ba8963416eb89e30cfbe3b6ec1f44fac09969df` |
-| amd64 + arm64 digests | unverified — nothing published | unverified | unverified | ✅ both architecture tags present in the GHCR tag list; combined into an OCI index per merged [PR #10](https://github.com/projectbluefin/ghostscript-printer-app/pull/10) |
+| GHCR image published | ❌ none — `ghcr.io/projectbluefin/<repo>` returns `NAME_UNKNOWN` | ❌ none | ❌ none | ✅ `10.07.1-1`, `10.07.1-1-x86_64`, `10.07.1-1-aarch64` (GHCR tags carry no `v` prefix; only the git tag does) |
+| Source commit / FSDK revision on record | unverified — no tag exists to pin | unverified | unverified | ✅ tag `v10.07.1-1` → tag object `6ba8963416eb89e30cfbe3b6ec1f44fac09969df` → commit `17d44ec7decd562930e46407dd022c6afd9e0c8b` ("Merge pull request #9", 2026-09-17 03:39 UTC) |
+| amd64 + arm64 digests | unverified — nothing published | unverified | unverified | ✅ both architecture tags present in the GHCR tag list; combined into an OCI index, re-verified by merged [PR #10](https://github.com/projectbluefin/ghostscript-printer-app/pull/10) |
 | Synthetic filter/backend job output | unverified — no image to run | unverified | unverified | ✅ `tests/appliance-parity.sh` (`just verify`) asserts the full advertised Ghostscript driver/backend/PPD-provider list against the built image; `tests/socket-sink.py` exercises print jobs against a synthetic socket sink |
-| GHCR Actions registered on default branch | ❌ `total_count: 0` via `actions/workflows` API despite `registry-actions.yml`/`ci.yml`/`auto-update.yml` files existing in the tree | ❌ same | ❌ same | ✅ `ci.yml`, `registry-actions.yml`, `update-fsdk-sources.yml`, `auto-update.yml` all `active` with run history |
-| Index signature (cosign / keyless OIDC) | unverified | unverified | unverified | ✅ verified against the published index per PR #10 evidence (`cosign verify`) |
+| GHCR Actions registered on default branch | ❌ `total_count: 0` via `actions/workflows` API despite `registry-actions.yml`/`ci.yml`/`auto-update.yml` files existing in the tree | 7 active workflows registered, 24 recorded runs (not zero; none is named `ci.yml`/`registry-actions.yml`) | 12 active workflows registered, 27 recorded runs (not zero; none is named `ci.yml`/`registry-actions.yml`) | ✅ `ci.yml`, `registry-actions.yml`, `update-fsdk-sources.yml`, `auto-update.yml` all `active` with run history |
+| Index signature (cosign / keyless OIDC) | unverified | unverified | unverified | ✅ verified against the published index, per PR #10's re-verification (`cosign verify`) |
 | SPDX SBOM discoverable | unverified | unverified | unverified | ✅ `sha256-ae66f00a84a81568908b8d344b5638f6b19fcca0ec340ff2414dec183ef90784` referrer tag resolves via `oras discover --format json` `.referrers[]` (fixed in PR #10 — the verifier previously queried the wrong `.manifests` key) |
 | SLSA provenance | unverified | unverified | unverified | recorded as verified in PR #10 (`gh attestation verify`); not independently re-verified here — `gh attestation verify` is outside this environment's permitted command surface |
 | Testing → stable promotion evidence | unverified — repo has no `stable` release history yet | unverified | unverified | branches `testing` and `stable` both exist; `v10.07.1-1` was cut from `stable` per the tag/release naming, but no dedicated promotion-diff evidence beyond the tag itself was located |
@@ -48,15 +48,20 @@ stable branch," and none has ever produced a GHCR image, a version tag, or a
 registered GitHub Actions run. There is no image, digest, signature, SBOM, or
 provenance to audit for these three apps yet — that is a release-pipeline gap
 in those repos, not a false pass here. `ghostscript-printer-app` is the only
-one of the four with a real, previously-audited release contract (see the
-merged [PR #10](https://github.com/projectbluefin/ghostscript-printer-app/pull/10)
-and open [PR #26](https://github.com/projectbluefin/ghostscript-printer-app/pull/26),
-which adds a Snap driver/version parity matrix for that image specifically).
+one of the four with a real, previously-audited release contract. The release
+itself was cut from commit `17d44ec7decd562930e46407dd022c6afd9e0c8b` (tag
+`v10.07.1-1`); merged [PR #10](https://github.com/projectbluefin/ghostscript-printer-app/pull/10)
+landed five hours later and re-verified that already-published release's
+index/SBOM referrer resolution rather than producing it. Open
+[PR #26](https://github.com/projectbluefin/ghostscript-printer-app/pull/26)
+adds a Snap driver/version parity matrix for that image specifically, tracking
+open issue [ghostscript-printer-app#19](https://github.com/projectbluefin/ghostscript-printer-app/issues/19).
 
 ## Known version drift (ghostscript-printer-app only)
 
-Per the driver/version parity work in progress on
-[ghostscript-printer-app#19](https://github.com/projectbluefin/ghostscript-printer-app/pull/26):
+Per the driver/version parity work in progress in
+[PR #26](https://github.com/projectbluefin/ghostscript-printer-app/pull/26)
+(tracking issue [ghostscript-printer-app#19](https://github.com/projectbluefin/ghostscript-printer-app/issues/19)):
 
 - Ghostscript/ghostpdl: OCI image pins `10.07.1` (IJS-only) vs. Snap `10.08.0`.
 - brlaser: OCI image pins upstream `pdewacht/brlaser` `v6` vs. Snap's
