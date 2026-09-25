@@ -48,7 +48,7 @@ mDNS/DNS-SD (eSCL) or WS-Discovery (WSD).
 | Transport | Custom binary RPC over raw TCP | HTTP(S) + XML | SOAP over HTTP(S) |
 | Discovery | None (static config) | mDNS/DNS-SD | WS-Discovery |
 | Transport encryption | **None built in** | TLS via HTTPS | TLS via HTTPS |
-| Access control | IP allow-list in `saned.conf` (`+` = any host, explicitly flagged as a risk in upstream docs); optional `saned.users` username/MD5-hashed-password file | HTTP auth / device-local | HTTP auth / device-local |
+| Access control | IP allow-list in `saned.conf` (`+` = any host, explicitly flagged as a risk in upstream docs); optional `saned.users` file of plain-text `user:password:backend` entries, sent as an MD5 challenge-response when the client supports it, otherwise in clear | HTTP auth / device-local | HTTP auth / device-local |
 | Recommended exposure | Upstream docs (`saned(8)`) say explicitly: not fit for exposure beyond a trusted LAN; front with a firewall or tcpwrappers, or tunnel over SSH/VPN | Designed for LAN, HTTPS-capable | Designed for LAN, HTTPS-capable |
 | Root/privilege notes | Must not run as root or setuid-root; classic advice is to run under a dedicated unprivileged user via inetd | N/A (client library, no daemon) | N/A |
 
@@ -59,9 +59,14 @@ Key findings:
    the wire must come from an external tunnel (SSH, WireGuard, VPN) — this is
    the documented community workaround, not a feature of the daemon.
 2. **Authentication is weak by modern standards.** The optional
-   `saned.users` mechanism hashes passwords with MD5. IP-based allow-listing
-   is the primary control, and upstream documentation calls out the bare `+`
-   wildcard entry as a specific misconfiguration risk.
+   `saned.users` file stores passwords in plain text on disk
+   (`user:password:backend` per line); on the wire, the server sends a
+   random salt and an MD5-supporting client responds with
+   MD5(salt + password), but a client without MD5 support falls back to
+   sending the password in clear (`sanei_auth.c`'s `check_passwd()`
+   compares the plain-text file entry against either form). IP-based
+   allow-listing is the primary control, and upstream documentation calls
+   out the bare `+` wildcard entry as a specific misconfiguration risk.
 3. **No discovery, so no accidental network exposure by default** — a
    `saned` container would need an operator to explicitly configure a client
    to find it. This bounds accidental blast radius but adds a UX gap
@@ -114,8 +119,10 @@ reach a `saned` appliance:
 3. Network path on TCP/6566 to the appliance, and, if the appliance's
    `saned.conf` allow-list is not `+`, the client's address (or hostname)
    present in that list.
-4. If `saned.users` is configured, credentials provisioned out of band; MD5
-   hashing means this should be treated as access control, not
+4. If `saned.users` is configured, credentials provisioned out of band; the
+   file stores plain-text passwords on the appliance and the wire protocol
+   only optionally MD5-challenges them (falling back to cleartext against
+   older clients), so this should be treated as access control, not
    confidentiality, and should ride over an encrypted tunnel if used outside
    a fully trusted segment.
 
