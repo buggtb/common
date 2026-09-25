@@ -43,8 +43,8 @@ common#1216 with explicit blockers; it does not produce a runnable image.
 
 - Build is a plain `make` using `pkg-config` against `pappl2`, `sane-backends`,
   and `libjpeg`.
-- The `pappl2` dependency is **not upstream PAPPL**. The README and `Makefile`
-  require `https://github.com/Kappuccino111/pappl/tree/scanning-v2` — the
+- The `pappl2` dependency is **not upstream PAPPL**. The README requires
+  `https://github.com/Kappuccino111/pappl/tree/scanning-v2` — the
   author's personal fork/branch, confirmed to exist via
   `git ls-remote` (`refs/heads/scanning`, `refs/heads/scanning-v2`,
   `refs/heads/old-scanning`), none of which are merged into
@@ -70,13 +70,16 @@ common#1216 with explicit blockers; it does not produce a runnable image.
   Applications; it has no scanner-side functionality.
 - Scanning support is a separate, parallel effort happening directly against
   PAPPL core (`michaelrsweet/pappl`), primarily through GSoC work:
-  - GSoC 2022 added initial eSCL support to PAPPL
-    ([pappl#133](https://github.com/michaelrsweet/pappl/issues/133)).
-  - GSoC 2024 ("PAPPL Scan API Bridging") is the work scanApp exercises; its
-    PR ([pappl#249](https://github.com/michaelrsweet/pappl/pull/249)) is
-    **still open**, not merged into a tagged PAPPL release.
-  - common#1213 tracks this upstream PR directly and is the right place to
-    watch for a merged/tagged scanning API landing in PAPPL.
+  - [pappl#133](https://github.com/michaelrsweet/pappl/issues/133) is the
+    open tracking issue for eSCL/scanning support in PAPPL; nothing from it
+    has merged.
+  - The GSoC 2024 ("PAPPL Scan API Bridging") effort scanApp exercises went
+    through PR [pappl#249](https://github.com/michaelrsweet/pappl/pull/249)
+    and later PR [pappl#371](https://github.com/michaelrsweet/pappl/pull/371),
+    both of which are **closed**, not merged. The current, still-open scanning
+    API PR is [pappl#425](https://github.com/michaelrsweet/pappl/pull/425).
+  - common#1213 tracks `michaelrsweet/pappl#425` directly and is the right
+    place to watch for a merged/tagged scanning API landing in PAPPL.
 - **Conclusion:** there is currently no scanning-capable release of either
   PAPPL or pappl-retrofit to retrofit against. "pappl-retrofit scanning" does
   not exist as a shippable feature yet.
@@ -116,7 +119,7 @@ physical scanner:
 3. **No scanning support in pappl-retrofit** — the actual OpenPrinting
    `pappl-retrofit` project (Apache-2.0, buildable, real) has no scanning code.
    Framing this as "pappl-retrofit scanning" is inaccurate until PAPPL's own
-   scanning API PR (`michaelrsweet/pappl#249`, tracked in common#1213) merges
+   scanning API PR (`michaelrsweet/pappl#425`, tracked in common#1213) merges
    and pappl-retrofit is extended to use it.
 4. **No hardware verification** — this evaluation had no physical MFP/scanner
    available; any claim about real-device behavior beyond go-mfp's simulated
@@ -125,6 +128,6 @@ physical scanner:
 
 **Recommendation:** do not authorize a production Scanner Application image
 based on scanApp or pappl-retrofit at this time. Continue tracking
-`michaelrsweet/pappl#249` via common#1213; revisit this evaluation once PAPPL
+`michaelrsweet/pappl#425` via common#1213; revisit this evaluation once PAPPL
 ships a tagged release with scanning support and scanApp (or a successor) has
 an OSI-approved license.
