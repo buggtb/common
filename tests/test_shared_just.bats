@@ -255,8 +255,17 @@ _run_contribute() {
     rm -f "${WORKDIR}/bin/podman"
     mkdir -p "${WORKDIR}/home/.config/hive"
     : > "${WORKDIR}/home/.config/hive/contributor.env"
+    # PATH is limited to the stub dir so a host /usr/bin/podman (present on
+    # GitHub runners) can't satisfy the check; link the two tools the recipe
+    # runs before it.
+    ln -s "$(command -v sha256sum)" "${WORKDIR}/bin/sha256sum"
+    ln -s "$(command -v cut)" "${WORKDIR}/bin/cut"
 
-    _run_contribute
+    run /usr/bin/env -i \
+        PATH="${WORKDIR}/bin" \
+        HOME="${WORKDIR}/home" \
+        CALLS="${WORKDIR}/calls.log" \
+        /usr/bin/bash "${WORKDIR}/contribute.sh"
 
     [ "${status}" -eq 127 ]
     [[ "${output}" == *"podman is required"* ]]
