@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-26",
+  "generated_at": "2026-09-27",
   "schema_version": "1.0",
   "skills": [
     {
@@ -139,6 +139,26 @@
       "description": "Mandatory first-lookup policy for external tools. Use before asserting anything about bootc, cosign, skopeo, buildah, just, GitHub Actions, or Renovate.",
       "version": "1.0",
       "last_updated": "2026-07-19",
+      "doc_type": "reference"
+    },
+    {
+      "id": "contribute",
+      "name": "contribute",
+      "one_line_purpose": "Operate the ujust contribute podman alias for the Hive contributor appliance.",
+      "entry_point": "docs/skills/contribute.md",
+      "category": "ci-ops",
+      "status": "active",
+      "tags": [
+        "contribute",
+        "hive",
+        "podman",
+        "krun",
+        "gvisor",
+        "just"
+      ],
+      "description": "ujust contribute aliases to a podman-run invocation of projectbluefin/contribute defaulting to the projectbluefin Hive. Use when working on the recipe, its isolation-tier warning, or its resource limits.",
+      "version": "1.0",
+      "last_updated": "2026-09-27",
       "doc_type": "reference"
     },
     {
