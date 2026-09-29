@@ -58,6 +58,11 @@ across bluefin, bluefin-lts, aurora, and dakota (all consumers of
   or `gh auth token --hostname github.com`, in that order; exported and passed
   to the container as `--env GH_TOKEN` (name only, so the value never appears
   in podman's argv).
+- **Image provenance verified before launch.** The recipe pulls the image,
+  runs `gh attestation verify oci://<pulled digest> --repo projectbluefin/contribute`,
+  and launches with `--pull=never`. A failed check refuses to launch; a host
+  without `gh` warns and runs unverified. `HIVE_CONTRIBUTE_NO_VERIFY=1` skips
+  the check (outage escape hatch).
 - **Default hub.** `wss://hosted-projectbluefin-knuckle-gjvq.hive.hivecommons.dev/api/contribute/ws`
   — projectbluefin's own hosted Hive (see
   [`hive-automerge.md`](hive-automerge.md) for the same host). Override with
@@ -72,6 +77,7 @@ across bluefin, bluefin-lts, aurora, and dakota (all consumers of
 | `HIVE_CONTRIBUTE_MEMORY` | `4g` |
 | `HIVE_CONTRIBUTE_CPUS` | `2` |
 | `HIVE_CONTRIBUTE_REGISTRATION` | `${HOME}/.config/hive/contributor.env` |
+| `HIVE_CONTRIBUTE_NO_VERIFY` | `0` (set `1` to skip provenance verification) |
 
 ## Verification
 

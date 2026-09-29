@@ -48,8 +48,38 @@ contribute:
         GH_TOKEN_VALUE="$(gh auth token --hostname github.com 2>/dev/null || true)"
     fi
 
+    # Provenance: the worker receives the user's GitHub token, so verify the
+    # build-provenance attestation of the exact digest pulled before running it
+    # with --pull=never. Only ghcr.io/projectbluefin/* refs are checked; a host
+    # without gh warns and runs unverified, a host with gh fails closed.
+    # HIVE_CONTRIBUTE_NO_VERIFY=1 is the escape hatch for a Sigstore/GitHub outage.
+    podman pull --quiet "${IMAGE}" >/dev/null
+    VERIFY_REF="${IMAGE}"
+    DIGEST="$(podman image inspect --format '{{{{.Digest}}' "${IMAGE}" 2>/dev/null || true)"
+    if [[ "${DIGEST}" == sha256:* ]]; then
+        REPO="${IMAGE%%@*}"
+        REPO="${REPO%:*}"
+        VERIFY_REF="${REPO}@${DIGEST}"
+    fi
+    if [[ "${VERIFY_REF}" == ghcr.io/projectbluefin/* ]]; then
+        SIGNER="${VERIFY_REF%%@*}"
+        SIGNER="${SIGNER%:*}"
+        SIGNER="${SIGNER#ghcr.io/}"
+        if [[ "${HIVE_CONTRIBUTE_NO_VERIFY:-0}" == 1 ]]; then
+            echo "contribute: HIVE_CONTRIBUTE_NO_VERIFY=1: launching ${VERIFY_REF} WITHOUT provenance verification." >&2
+        elif ! command -v gh &>/dev/null; then
+            echo "contribute: gh is unavailable; launching ${VERIFY_REF} WITHOUT provenance verification." >&2
+        elif ! VERIFY_OUTPUT="$(gh attestation verify "oci://${VERIFY_REF}" --repo "${SIGNER}" 2>&1)"; then
+            echo "${VERIFY_OUTPUT}" >&2
+            echo "contribute: build-provenance verification failed for ${VERIFY_REF}; refusing to launch. If Sigstore or the GitHub API is down and you accept the risk, rerun with HIVE_CONTRIBUTE_NO_VERIFY=1." >&2
+            exit 1
+        else
+            echo "contribute: build provenance verified: ${VERIFY_REF}"
+        fi
+    fi
+
     ARGS=(
-        podman run "${RUNTIME_ARGS[@]}" --rm --interactive --tty
+        podman run --pull=never "${RUNTIME_ARGS[@]}" --rm --interactive --tty
         --userns "keep-id:uid=65532,gid=65532"
         --volume "${STATE_VOLUME}:/home/hive:rw"
         --volume "${REGISTRATION}:/home/hive/.config/hive/contributor.env:ro,z"

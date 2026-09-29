@@ -71,6 +71,10 @@ EOF
     cat > "${WORKDIR}/bin/gh" <<'EOF'
 #!/usr/bin/bash
 printf 'gh %s\n' "$*" >> "${CALLS}"
+if [[ "$1" == "attestation" ]]; then
+    [[ "${GH_ATTEST_FAIL:-0}" == 1 ]] && { echo "stub: verification failed"; exit 1; }
+    exit 0
+fi
 printf '%s\n' "${GH_STUB_TOKEN:-}"
 EOF
 
@@ -243,6 +247,7 @@ _run_contribute() {
         CALLS="${WORKDIR}/calls.log" \
         KRUN_AVAILABLE="${KRUN_AVAILABLE:-0}" \
         GH_STUB_TOKEN="${GH_STUB_TOKEN:-}" \
+        GH_ATTEST_FAIL="${GH_ATTEST_FAIL:-0}" \
         /usr/bin/bash "${WORKDIR}/contribute.sh"
 }
 
@@ -369,4 +374,31 @@ _run_contribute() {
 
     [ "${status}" -eq 0 ]
     [[ "${output}" == *"wss://example.test/api/contribute/ws"* ]]
+}
+
+@test "contribute: verifies image provenance before launching with --pull=never" {
+    mkdir -p "${WORKDIR}/home/.config/hive"
+    : > "${WORKDIR}/home/.config/hive/contributor.env"
+
+    _run_contribute
+
+    [ "${status}" -eq 0 ]
+    run grep -F -- "gh attestation verify oci://ghcr.io/projectbluefin/contribute" "${WORKDIR}/calls.log"
+    [ "${status}" -eq 0 ]
+    [[ "${output}" == *"--repo projectbluefin/contribute"* ]]
+    run grep -F -- "podman run --pull=never" "${WORKDIR}/calls.log"
+    [ "${status}" -eq 0 ]
+}
+
+@test "contribute: refuses to launch when provenance verification fails" {
+    mkdir -p "${WORKDIR}/home/.config/hive"
+    : > "${WORKDIR}/home/.config/hive/contributor.env"
+    GH_ATTEST_FAIL=1
+
+    _run_contribute
+
+    [ "${status}" -eq 1 ]
+    [[ "${output}" == *"refusing to launch"* ]]
+    run grep -F -- "podman run" "${WORKDIR}/calls.log"
+    [ "${status}" -ne 0 ]
 }
