@@ -62,7 +62,12 @@ contribute:
     # --memory keeps a runaway worker from spilling into host swap.
     ARGS+=(--memory "${MEMORY}" --memory-swap "${MEMORY}" --cpus "${CPUS}")
 
-    [[ -n "${GH_TOKEN_VALUE}" ]] && ARGS+=(--env "GH_TOKEN=${GH_TOKEN_VALUE}")
+    # By name only: podman reads the value from this process's environment,
+    # so the token never appears in podman's argv (visible in ps).
+    if [[ -n "${GH_TOKEN_VALUE}" ]]; then
+        export GH_TOKEN="${GH_TOKEN_VALUE}"
+        ARGS+=(--env GH_TOKEN)
+    fi
 
     ARGS+=("${IMAGE}")
 

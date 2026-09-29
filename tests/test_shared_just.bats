@@ -61,6 +61,7 @@ EOF
     cat > "${WORKDIR}/bin/podman" <<'EOF'
 #!/usr/bin/bash
 printf 'podman %s\n' "$*" >> "${CALLS}"
+printf 'podman-env GH_TOKEN=%s\n' "${GH_TOKEN:-}" >> "${CALLS}"
 if [[ "$1" == "--runtime=krun" ]]; then
     [[ "${KRUN_AVAILABLE:-0}" == 1 ]] && exit 0 || exit 1
 fi
@@ -337,7 +338,12 @@ _run_contribute() {
     _run_contribute
 
     [ "${status}" -eq 0 ]
-    run grep -Fq -- "--env GH_TOKEN=stub-token-value" <<< "$(cat "${WORKDIR}/calls.log")"
+    # Forwarded by name: the value reaches podman's environment, never its argv.
+    run grep -F -- "podman run" "${WORKDIR}/calls.log"
+    [ "${status}" -eq 0 ]
+    [[ "${output}" == *"--env GH_TOKEN "* ]]
+    [[ "${output}" != *"stub-token-value"* ]]
+    run grep -Fq -- "podman-env GH_TOKEN=stub-token-value" "${WORKDIR}/calls.log"
     [ "${status}" -eq 0 ]
 }
 

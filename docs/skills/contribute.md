@@ -55,8 +55,9 @@ across bluefin, bluefin-lts, aurora, and dakota (all consumers of
   `2`) — matching upstream's contributor envelope
   (`contributor_memory_limit_gib` / `contributor_cpu_limit`).
 - **GitHub token forwarded by name.** Resolved from `GH_TOKEN`, `GITHUB_TOKEN`,
-  or `gh auth token --hostname github.com`, in that order; passed to the
-  container as `--env GH_TOKEN=...` (a secret never appears in argv this way).
+  or `gh auth token --hostname github.com`, in that order; exported and passed
+  to the container as `--env GH_TOKEN` (name only, so the value never appears
+  in podman's argv).
 - **Default hub.** `wss://hosted-projectbluefin-knuckle-gjvq.hive.hivecommons.dev/api/contribute/ws`
   — projectbluefin's own hosted Hive (see
   [`hive-automerge.md`](hive-automerge.md) for the same host). Override with
